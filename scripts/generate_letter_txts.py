@@ -38,13 +38,16 @@ def create_letter_files(letters, letter_map, out_dir, fg='C', bg='A', resize=(70
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out_dir', required=True)
-    parser.add_argument('--font', default="RobotoMono-Bold.ttf")
+    parser.add_argument('--font', default="data/fonts/RobotoMono-Bold.ttf")
     parser.add_argument('--fg', default='C')
     parser.add_argument('--bg', default='A')
-    parser.add_argument('--letters', default='()')
     args = parser.parse_args()
 
-    letters = list(args.letters)
+    letters_large = [chr(l) for l in range(ord('A'), ord('Z')+1)] 
+    letters_int = [str(i) for i in range(10)]
+    letters_small = [chr(l) for l in range(ord('a'), ord('z')+1)]
+    letters_misc = [c for c in ';,.\'"{}[]<>?%()!:']
+    letters = letters_large + letters_int + letters_small + letters_misc
     letter_map = {x: x for x in letters}
     letter_map['.'] = 'dot'
     letter_map[','] = 'comma'
@@ -52,6 +55,7 @@ def main():
     letter_map[')'] = 'parenthesis1'
     letter_map['!'] = 'exclamation'
 
+    assert os.path.exists(args.font), f"[ERROR] {args.font} does not exist"
     create_letter_files(letters, letter_map, args.out_dir, fg=args.fg, bg=args.bg, ttf=args.font)
 
 if __name__ == '__main__':

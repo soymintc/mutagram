@@ -296,10 +296,6 @@ message = open('../messages/Sohrab.txt').read()
 ```
 
 ```python
-message = "Gonna miss _you so_ much too!"
-```
-
-```python
 %matplotlib inline
 ```
 
