@@ -1,3 +1,6 @@
 *.ipynb
 .ipynb_checkpoints/
 results/
+messages/
+NotoColorEmoji.ttf
+dejavu-fonts-ttf-2.37/

@@ -17,7 +17,9 @@ jupyter:
 
 ```python
 import os
+import re
 import subprocess
+from collections import defaultdict 
 
 import tqdm
 import pyfaidx
@@ -190,18 +192,14 @@ for chrom in tqdm.tqdm(chroms):
 stretch_starts
 ```
 
+# Create letter data
+
 ```python
 stretch_starts = yaml.safe_load(open('../metadata/regions.yaml'))
 ```
 
-# Create letter data
-
 ```python
-stretch_starts
-```
-
-```python
-fg = 'C'
+fg = 'T'
 bg = 'A'
 ws = 70
 ```
@@ -210,9 +208,10 @@ ws = 70
 letters_large = [chr(l) for l in range(ord('A'), ord('Z')+1)] 
 letters_int = [str(i) for i in range(10)]
 letters_small = [chr(l) for l in range(ord('a'), ord('z')+1)]
-letters_misc = [c for c in ';,.\'"{}[]<>?%()!']
+letters_misc = [c for c in ';,.\'"{}[]<>?%()!:']
 
-letters = letters_large + letters_int + letters_small + letters_misc
+# letters = letters_large + letters_int + letters_small + letters_misc
+letters = letters_misc
 
 letter_map = {x:x for x in letters}
 letter_map['.'] = 'dot'
@@ -281,48 +280,38 @@ for letter in tqdm.tqdm('()'):
 # Write message
 
 ```python
-char2path.keys()
-```
-
-```python
-png_paths[:3]
-```
-
-```python
 png_dir = f'../results/png_resize'
 
-fg, bg = 'C', 'A'
-png_paths = glob.glob(f'{png_dir}/*.fg{fg}.bg{bg}.png')
-char2path = {os.path.split(p)[-1].split('.')[0]: p for p in png_paths}
-char2path['.'] = '../results/png_resize/dot.fgC.bgA.png'
-char2path[','] = '../results/png_resize/comma.fgC.bgA.png'
-char2path['('] = '../results/png_resize/parenthesis0.fgC.bgA.png'
-char2path[')'] = '../results/png_resize/parenthesis1.fgC.bgA.png'
-char2path['!'] = '../results/png_resize/exclamation.fgC.bgA.png'
-
-# fg, bg = 'T', 'A'
-png_paths = glob.glob(f'{png_dir}/*.fgT.bg{bg}.png')
-char2path_red = {os.path.split(p)[-1].split('.')[0]: p for p in png_paths}
-char2path_red['.'] = '../results/png_resize/dot.fgC.bgA.png'
-char2path_red[','] = '../results/png_resize/comma.fgC.bgA.png'
-char2path_red['('] = '../results/png_resize/parenthesis0.fgC.bgA.png'
-char2path_red[')'] = '../results/png_resize/parenthesis1.fgC.bgA.png'
-char2path_red['!'] = '../results/png_resize/exclamation.fgC.bgA.png'
+char2path = defaultdict(dict)
+png_paths = glob.glob(f'{png_dir}/*.png')
+for png_path in png_paths:
+    dname, fname = os.path.split(png_path)
+    dst_letter, _fg, _bg = re.search(r'(.+)\.fg([ACGT])\.bg([ACGT])\.png', fname).groups()
+    key = _fg + _bg
+    char2path[key][dst_letter] = png_path
 ```
 
 ```python
-! git push
+message = open('../messages/Sohrab.txt').read()
 ```
 
 ```python
+message = "Gonna miss _you so_ much too!"
+```
+
+```python
+%matplotlib inline
+```
+
+```python
+red_key = 'TA'
+blue_key = 'CA'
+
 # 2. The text to layout
 line_spacing = 1.3
-message = (
-"""Lorem ipsum"""
-)
 
 # 3. Load one sample to get image size
-sample_img = mpimg.imread(next(iter(char2path.values())))
+sample_img = mpimg.imread(next(iter(char2path[blue_key].values())))
 img_h, img_w = sample_img.shape[:2]
 
 # 4. Parse layout string
@@ -339,7 +328,7 @@ ax.set_ylim(0, img_h * n_rows * line_spacing)
 ax.axis('off')
 
 # 6. Draw each character
-path_map = char2path
+path_map = char2path[blue_key]
 write_red = False
 for row_idx, line in enumerate(lines[::-1]):  # matplotlib plots bottom-up
     col_idx = -1
@@ -354,14 +343,15 @@ for row_idx, line in enumerate(lines[::-1]):  # matplotlib plots bottom-up
             else:
                 write_red = False
             continue
-        # if ch not in path_map:
-        #     continue
-        path_map = char2path
+        path_map = char2path[blue_key]
         if write_red:
-            path_map = char2path_red
-        img = mpimg.imread(path_map[ch])
+            path_map = char2path[red_key]
+        dst = letter_map.get(ch)
+        path = path_map[dst]
+        assert os.path.exists(path), path
+        img = mpimg.imread(path)
         x0 = col_idx * img_w
-        y0 = row_idx * img_h * line_spacing  # ← adjusted for double spacing
+        y0 = row_idx * img_h * line_spacing  # adjusted for double spacing
         ax.imshow(img, extent=[x0, x0 + img_w, y0, y0 + img_h])
 
 plt.subplots_adjust(hspace=0.5)
