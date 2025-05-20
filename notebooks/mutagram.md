@@ -261,8 +261,8 @@ start_pos, end_pos = [int(_) for _ in span.split('-')]
 ```python
 margin = 30
 end_pos = start_pos + ws
-# for letter in tqdm.tqdm(letters):
-for letter in tqdm.tqdm('()'):
+for letter in tqdm.tqdm(letters):
+# for letter in tqdm.tqdm('()'):
     dst_letter = letter_map[letter]
     bam = f'../results/bam/{dst_letter}.fg{fg}.bg{bg}.bam'
     png = f'../results/png/{dst_letter}.fg{fg}.bg{bg}.png'
