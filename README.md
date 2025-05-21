@@ -48,14 +48,25 @@ python generate_letter_pngs.py \
 
 ### 4. Render a message
 
+At this point `--png_dir` should contain resized letter png files.
+
 ```bash
 python assemble_message_image.py \
   --png_dir results/png_resize \
-  --message messages/Sohrab.txt \
+  --message messages/Foobar.txt \
   --fg T --bg A
 ```
 
-> Use underscores `_like this_` to toggle alternate colors for words.
+Or
+
+```bash
+python assemble_message_image.py \
+  --png_dir results/png_resize \
+  --message "Hello World!" \
+  --fg T --bg A
+```
+
+> Use underscores `_like this_` to toggle alternate colors (blue ↔ red) for words.
 
 ---
 
